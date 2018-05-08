@@ -1,0 +1,26 @@
+{
+  "name": "brntsrs/yii1-clickhouse",
+  "type": "library",
+  "version" : "0.1",
+  "description": "php ClickHouse client library",
+  "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client"],
+  "homepage": "https://github.com/brntsrs/yii1-clickhouse",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "brntsrs",
+      "email": "brntsrs@gmail.com",
+      "homepage": "https://github.com/brntsrs"
+    }
+  ],
+  "require": {
+    "smi2/phpclickhouse": "^0.17.02",
+    "yiisoft/yii2": "2.0.15.1",
+    "kak/clickhouse": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "brntsrs\\ClickHouse\\": "src/"
+    }
+  }
+}
