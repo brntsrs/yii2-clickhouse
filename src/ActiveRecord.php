@@ -19,4 +19,70 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
     {
         return Yii::createObject(ActiveQuery::class, [get_called_class()]);
     }
+
+    public function setAttributes($values, $safeOnly = true)
+    {
+        if (is_array($values)) {
+            $attributes = array_flip($safeOnly ? $this->safeAttributes() : $this->attributes());
+            foreach ($values as $name => $value) {
+                if (isset($attributes[$name])) {
+                    $this->$name = $this->prepareAttributeValue($name, $value);
+                } elseif ($safeOnly) {
+                    $this->onUnsafeAttribute($name, $value);
+                }
+            }
+        }
+    }
+
+    private function prepareAttributeValue($attribute, $value)
+    {
+        switch ($this->getAttributeType($attribute)) {
+            case 'integer':
+                return is_numeric($value) ? intval($value) : $value;
+                break;
+            case 'float':
+                return is_numeric($value) ? floatval($value) : $value;
+                break;
+            case 'boolean':
+                return boolval($value) ? 1 : 0;
+                break;
+        }
+        return $value;
+    }
+
+    private function getAttributeType($attribute)
+    {
+        foreach ($this->rules() as $rule) {
+            if (is_array($rule[0])) {
+                foreach ($rule[0] as $name) {
+                    if ($name == $attribute) {
+                        $type = $this->getRuleType($rule);
+                        if (!empty($type)) {
+                            return $type;
+                        }
+                    }
+                }
+            } else {
+                if ($rule[0] == $attribute) {
+                    $type = $this->getRuleType($rule);
+                    if (!empty($type)) {
+                        return $type;
+                    }
+                }
+            }
+        }
+        return 'string';
+    }
+
+    private function getRuleType($rule)
+    {
+        $types = [
+            'string' => 'string',
+            'number' => 'float',
+            'integer' => 'integer',
+            'boolean' => 'boolean',
+        ];
+
+        return isset($types[$rule[1]]) ? $types[$rule[1]] : null;
+    }
 }
