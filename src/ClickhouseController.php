@@ -62,7 +62,7 @@ class ClickhouseController extends Controller
         $dbParams['database'] = $this->getDbName($fullParams['components']['db']['dsn']);
         $dbParams['host'] = $this->getHost($dbParams['dsn']);
         $dbParams['port'] = 3306;
-        $dbParams['prefix'] = $dbParams['host'];
+        $dbParams['prefix'] = Dictionary::getDbPrefix();
         if ($dbParams['host'] == 'localhost') {
             if (!empty($fullParams['components']['clickHouse']['mysqlIp'])) {
                 $dbParams['host'] = $fullParams['components']['clickHouse']['mysqlIp'];
