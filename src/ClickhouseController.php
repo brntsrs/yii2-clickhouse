@@ -1,7 +1,7 @@
 <?php
 namespace brntsrs\ClickHouse;
 
-use yii\web\Controller;
+use yii\console\Controller;
 
 class ClickhouseController extends Controller
 {
@@ -43,15 +43,15 @@ class ClickhouseController extends Controller
         return $dictionaryList;
     }
 
-    private function getDbName($connectionString) {
+    private function getDbName($dsn) {
         $matches = array();
-        preg_match("/dbname=([^;]*)/", $connectionString, $matches);
+        preg_match("/dbname=([^;]*)/", $dsn, $matches);
         return $matches[1];
     }
 
-    private function getHost($connectionString) {
+    private function getHost($dsn) {
         $matches = array();
-        preg_match("/host=([^;]*)/", $connectionString, $matches);
+        preg_match("/host=([^;]*)/", $dsn, $matches);
         return $matches[1];
     }
 
@@ -59,8 +59,8 @@ class ClickhouseController extends Controller
         $fullParams = include \Yii::getAlias('@app/config/console') . '.php';
 
         $dbParams = $fullParams['components']['db'];
-        $dbParams['database'] = $this->getDbName($fullParams['components']['db']['connectionString']);
-        $dbParams['host'] = $this->getHost($dbParams['connectionString']);
+        $dbParams['database'] = $this->getDbName($fullParams['components']['db']['dsn']);
+        $dbParams['host'] = $this->getHost($dbParams['dsn']);
         $dbParams['port'] = 3306;
         if ($dbParams['host'] == 'localhost') {
             if (!empty($fullParams['components']['clickHouse']['mysqlIp'])) {
