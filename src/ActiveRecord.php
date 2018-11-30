@@ -20,6 +20,18 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         return Yii::createObject(ActiveQuery::class, [get_called_class()]);
     }
 
+    public function beforeSave($insert)
+    {
+        foreach ($this->attributes as $attribute => $value) {
+            if (empty($value)) {
+                $this->$attribute = $this->prepareAttributeValue($attribute, $value);
+                echo $attribute, ' = ', var_export($this->prepareAttributeValue($attribute, $value), true), "<br>\r\n";
+            }
+        }
+
+        return parent::beforeSave($insert);
+    }
+
     public function setAttributes($values, $safeOnly = true)
     {
         if (is_array($values)) {
@@ -38,16 +50,16 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
     {
         switch ($this->getAttributeType($attribute)) {
             case 'integer':
-                return is_numeric($value) ? intval($value) : $value;
+                return is_numeric($value) || empty($value) ? intval($value) : $value;
                 break;
             case 'float':
-                return is_numeric($value) ? floatval($value) : $value;
+                return is_numeric($value) || empty($value) ? floatval($value) : $value;
                 break;
             case 'boolean':
                 return boolval($value) ? 1 : 0;
                 break;
         }
-        return $value;
+        return strval($value);
     }
 
     private function getAttributeType($attribute)
