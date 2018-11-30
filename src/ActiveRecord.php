@@ -25,7 +25,6 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         foreach ($this->attributes as $attribute => $value) {
             if (empty($value)) {
                 $this->$attribute = $this->prepareAttributeValue($attribute, $value);
-                echo $attribute, ' = ', var_export($this->prepareAttributeValue($attribute, $value), true), "<br>\r\n";
             }
         }
 
