@@ -57,7 +57,11 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             case 'boolean':
                 return boolval($value) ? 1 : 0;
                 break;
+            case 'array':
+                return (array)$value;
+                break;
         }
+
         return strval($value);
     }
 
@@ -92,6 +96,7 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             'number' => 'float',
             'integer' => 'integer',
             'boolean' => 'boolean',
+            'in' => 'array',
         ];
 
         return isset($types[$rule[1]]) ? $types[$rule[1]] : null;
