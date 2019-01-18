@@ -60,6 +60,8 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             case 'array':
                 return (array)$value;
                 break;
+            case 'safe':
+                return $value;
         }
 
         return strval($value);
@@ -97,6 +99,7 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             'integer' => 'integer',
             'boolean' => 'boolean',
             'in' => 'array',
+            'safe' => 'safe',
         ];
 
         return isset($types[$rule[1]]) ? $types[$rule[1]] : null;
