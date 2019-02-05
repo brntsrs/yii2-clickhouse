@@ -1,5 +1,6 @@
 <?php
 namespace brntsrs\ClickHouse;
+use kak\clickhouse\ColumnSchema;
 use Yii;
 
 class ActiveRecord extends \kak\clickhouse\ActiveRecord
@@ -88,7 +89,8 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
                 }
             }
         }
-        return 'string';
+
+        return self::getTableSchema()->getColumn($attribute)->phpType;
     }
 
     private function getRuleType($rule)
