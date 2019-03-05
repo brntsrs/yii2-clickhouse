@@ -32,6 +32,15 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         return parent::beforeSave($insert);
     }
 
+    public function __set($name, $value)
+    {
+        if ($this->hasAttribute($name)) {
+            parent::__set($name, $this->prepareAttributeValue($name, $value));
+        } else {
+            parent::__set($name, $value);
+        }
+    }
+
     public function setAttributes($values, $safeOnly = true)
     {
         if (is_array($values)) {
