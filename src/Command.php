@@ -38,7 +38,6 @@ class Command extends \kak\clickhouse\Command
             } elseif ($value === null) {
                 $params[$name] = 'NULL';
             } elseif (is_array($value)) {
-                echo '12';
                 $data = [];
                 foreach ($value as $item) {
                     $data[] = $this->db->quoteValue($item);

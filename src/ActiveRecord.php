@@ -64,6 +64,9 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             case 'float':
                 return is_numeric($value) || empty($value) ? floatval($value) : $value;
                 break;
+            case 'double':
+                return is_numeric($value) || empty($value) ? doubleval($value) : $value;
+                break;
             case 'boolean':
                 return boolval($value) ? 1 : 0;
                 break;
