@@ -99,7 +99,9 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             }
         }
 
-        return self::getTableSchema()->getColumn($attribute)->phpType;
+        return strpos(self::getTableSchema()->getColumn($attribute)->dbType, 'Array') === false ?
+            self::getTableSchema()->getColumn($attribute)->phpType :
+            'array';
     }
 
     private function getRuleType($rule)

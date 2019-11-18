@@ -15,6 +15,12 @@ class Connection extends \kak\clickhouse\Connection
 
     private $_isWrite = false;
 
+    public $commandClass = 'brntsrs\ClickHouse\Command';
+    public $schemaClass = 'brntsrs\ClickHouse\Schema';
+    public $schemaMap = [
+        'clickhouse' => 'brntsrs\ClickHouse\Schema'
+    ];
+
     /**
      * @return bool|Client
      */
