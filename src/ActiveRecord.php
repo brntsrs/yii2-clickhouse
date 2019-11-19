@@ -5,6 +5,8 @@ use Yii;
 
 class ActiveRecord extends \kak\clickhouse\ActiveRecord
 {
+    protected $isForSearch = false;
+
     public function insert($runValidation = true, $attributes = null)
     {
         self::getDb()->setToWrite();
@@ -55,8 +57,16 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         }
     }
 
+    public function setSearchMode($isEnabled = true)
+    {
+        $this->isForSearch = $isEnabled;
+    }
+
     private function prepareAttributeValue($attribute, $value)
     {
+        if ($this->isForSearch && ($value === '' || $value === null)) {
+            return null;
+        }
         switch ($this->getAttributeType($attribute)) {
             case 'integer':
                 return is_numeric($value) || empty($value) ? intval($value) : $value;
