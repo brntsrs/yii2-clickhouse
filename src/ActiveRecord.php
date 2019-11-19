@@ -83,6 +83,8 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             case 'array':
                 return (array)$value;
                 break;
+            case 'date':
+                return empty($value) ? '0000-00-00' : $value;
             case 'safe':
                 return $value;
         }
@@ -112,9 +114,14 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
             }
         }
 
-        return strpos(self::getTableSchema()->getColumn($attribute)->dbType, 'Array') === false ?
-            self::getTableSchema()->getColumn($attribute)->phpType :
-            'array';
+        $column = self::getTableSchema()->getColumn($attribute);
+        if ($column->type == 'date') {
+            return 'date';
+        }
+        if (strpos($column->dbType, 'Array') !== false) {
+            return 'array';
+        }
+        return $column->phpType;
     }
 
     private function getRuleType($rule)
