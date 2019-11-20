@@ -1,6 +1,8 @@
 <?php
 namespace brntsrs\ClickHouse;
 
+use kak\clickhouse\Query;
+
 class ActiveQuery extends \kak\clickhouse\ActiveQuery
 {
     /**
@@ -24,5 +26,24 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
         }
 
         return parent::populate($models);
+    }
+
+    public function count($q = '', $db = null)
+    {
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            return parent::count($q, $db);
+        }
+        $command = (new Query())
+            ->select(["COUNT($q)"])
+            ->from(['c' => $this])
+            ->createCommand($db);
+        $this->setCommandCache($command);
+
+        return $command->queryScalar();
     }
 }
