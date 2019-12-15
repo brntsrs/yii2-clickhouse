@@ -79,4 +79,15 @@ class Connection extends \kak\clickhouse\Connection
             ]);
         }
     }
+
+    protected $_schema;
+
+    public function getSchema()
+    {
+        if ($this->_schema === null) {
+            $this->_schema = parent::getSchema();
+        }
+
+        return $this->_schema;
+    }
 }
