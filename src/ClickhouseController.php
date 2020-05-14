@@ -72,7 +72,9 @@ class ClickhouseController extends Controller
         }
         $replaceParams = [];
         foreach ($dbParams as $key => $value) {
-            $replaceParams['{DB:' . $key . '}'] = $value;
+            if (!is_array($value)) {
+                $replaceParams['{DB:' . $key . '}'] = $value;
+            }
         }
 
         return $replaceParams;
