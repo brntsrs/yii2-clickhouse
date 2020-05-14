@@ -59,8 +59,9 @@ class Command extends \kak\clickhouse\Command
 
     public function changeOptions($table, $options)
     {
-        $schema = $this->db->getSchema()->getTableSchema($table);
+        $schema = $this->db->getSchema()->getTableSchema($table, true);
         $columns = [];
+        $columnNames = [];
         $structures = [];
         foreach ($schema->columns as $column) {
             if (strpos($column->name, '.') !== false) {
@@ -72,15 +73,17 @@ class Command extends \kak\clickhouse\Command
             } else {
                 $columns[$column->name] = $this->db->getSchema()->createColumnSchemaBuilder($column->type);
             }
+            $columnNames[] = $column->name;
         }
         foreach ($structures as $columnName => $structure) {
-            $columns[$columnName] = implode(', ', $structure);
+            $columns[$columnName] = 'Nested (' . implode(', ', $structure) . ')';
         }
-        $this->createTable($table . '_new', $columns, $options);
-        $this->execute('INSERT INTO `' . $table . '_new` SELECT * FROM `' . $table . '`');
-        $this->renameTable($table, $table . '_old');
-        $this->renameTable($table . '_new', $table);
-        $this->dropTable($table . '_old');
+        $this->createTable($table . '_new', $columns, $options)->execute();
+        $this->db->createCommand('INSERT INTO `' . $table . '_new` (' . implode(', ', $columnNames) . ') SELECT ' . implode(', ', $columnNames) . ' FROM `' . $table . '`')->execute();
+        $this->renameTable($table, $table . '_old')->execute();
+        $this->renameTable($table . '_new', $table)->execute();
+        $this->dropTable($table . '_old')->execute();
+
         return true;
     }
 }
