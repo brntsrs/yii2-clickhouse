@@ -56,4 +56,31 @@ class Command extends \kak\clickhouse\Command
         }
         return $sql;
     }
+
+    public function changeOptions($table, $options)
+    {
+        $schema = $this->db->getSchema()->getTableSchema($table);
+        $columns = [];
+        $structures = [];
+        foreach ($schema->columns as $column) {
+            if (strpos($column->name, '.') !== false) {
+                $name = explode('.', $column->name);
+                if (!isset($structures[$name[0]])) {
+                    $structures[$name[0]] = [];
+                }
+                $structures[$name[0]][] = $name[1] . ' ' . trim(str_replace('Array', '', $column->dbType), ')(');
+            } else {
+                $columns[$column->name] = $this->db->getSchema()->createColumnSchemaBuilder($column->type);
+            }
+        }
+        foreach ($structures as $columnName => $structure) {
+            $columns[$columnName] = implode(', ', $structure);
+        }
+        $this->createTable($table . '_new', $columns, $options);
+        $this->execute('INSERT INTO `' . $table . '_new` SELECT * FROM `' . $table . '`');
+        $this->renameTable($table, $table . '_old');
+        $this->renameTable($table . '_new', $table);
+        $this->dropTable($table . '_old');
+        return true;
+    }
 }
