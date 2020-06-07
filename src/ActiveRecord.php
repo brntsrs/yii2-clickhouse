@@ -64,8 +64,15 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
 
     private function prepareAttributeValue($attribute, $value)
     {
-        if ($this->isForSearch && ($value === '' || $value === null)) {
+        if ($this->isForSearch && ($value === '' || $value === null || $value === [])) {
             return null;
+        }
+        if (is_array($value)) {
+            $list = [];
+            foreach ($value as $id => $data) {
+                $list[$id] = $this->prepareAttributeValue($attribute, $data);
+            }
+            return $list;
         }
         switch ($this->getAttributeType($attribute)) {
             case 'integer':
