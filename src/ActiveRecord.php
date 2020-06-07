@@ -67,14 +67,16 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         if ($this->isForSearch && ($value === '' || $value === null || $value === [])) {
             return null;
         }
-        if (is_array($value)) {
+        $attributeType = $this->getAttributeType($attribute);
+        $conversionTypes = ['integer', 'float', 'double', 'boolean', 'date', 'string'];
+        if (is_array($value) && in_array($attributeType, $conversionTypes)) {
             $list = [];
             foreach ($value as $id => $data) {
                 $list[$id] = $this->prepareAttributeValue($attribute, $data);
             }
             return $list;
         }
-        switch ($this->getAttributeType($attribute)) {
+        switch ($attributeType) {
             case 'integer':
                 return is_numeric($value) || empty($value) ? intval($value) : $value;
                 break;
