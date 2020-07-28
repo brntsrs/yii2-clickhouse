@@ -146,4 +146,37 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
 
         return isset($types[$rule[1]]) ? $types[$rule[1]] : null;
     }
+
+
+
+    public function getProperties()
+    {
+        $class = new \ReflectionClass($this);
+        $names = [];
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $names[] = $property->getName();
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * @param ActiveRecord $record
+     * @param array|ActiveRecord $row
+     */
+    public static function populateRecord($record, $row)
+    {
+        $columns = array_flip($record->attributes());
+        if (!is_array($row)) {
+            foreach ($record->getProperties() as $property) {
+                if (isset($row->{$property})) {
+                    $record->{$property} = $row->{$property};
+                }
+            }
+        }
+
+        parent::populateRecord($record, $row);
+    }
 }
