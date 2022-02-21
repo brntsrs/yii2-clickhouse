@@ -5,6 +5,7 @@ use yii\httpclient\Client;
 
 class Connection extends \kak\clickhouse\Connection
 {
+    public $dsnWrite;
     public $portWrite = 8123;
 
     /** @var bool|Client */
@@ -53,17 +54,7 @@ class Connection extends \kak\clickhouse\Connection
             return;
         }
 
-        $auth = !empty($this->username) ? $this->username . ':' . $this->password  .'@' : '';
-        $scheme = 'http';
-        $url =  $scheme. '://' . $auth . $this->dsn. ':' . ($this->_isWrite ? $this->portWrite : $this->port);
-
-        $params = [];
-        if (!empty($this->database)) {
-            $params['database'] = $this->database;
-        }
-        if (count($params)) {
-            $url.= '?' . http_build_query($params);
-        }
+        $url = $this->buildConnectionUrl($this->_isWrite);
 
         if ($this->_isWrite) {
             $this->_transportWrite = new Client([
@@ -78,6 +69,29 @@ class Connection extends \kak\clickhouse\Connection
                 'requestConfig' => $this->requestConfig,
             ]);
         }
+    }
+
+    protected function buildConnectionUrl($isWrite = false)
+    {
+        $auth = !empty($this->username) ? $this->username . ':' . $this->password  .'@' : '';
+        $scheme = 'http';
+
+        $dsn = $isWrite ? $this->dsnWrite : $this->dsn;
+        if (empty($dsn)) {
+            $dsn = $this->dsn;
+        }
+
+        $url =  $scheme. '://' . $auth . $dsn. ':' . ($this->_isWrite ? $this->portWrite : $this->port);
+
+        $params = [];
+        if (!empty($this->database)) {
+            $params['database'] = $this->database;
+        }
+        if (count($params)) {
+            $url.= '?' . http_build_query($params);
+        }
+
+        return $url;
     }
 
     protected $_schema;
