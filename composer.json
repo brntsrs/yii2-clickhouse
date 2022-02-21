@@ -15,7 +15,7 @@
   ],
   "require": {
     "yiisoft/yii2": "^2.0",
-    "kak/clickhouse": "dev-master"
+    "kak/clickhouse": "@dev"
   },
   "autoload": {
     "psr-4": {
