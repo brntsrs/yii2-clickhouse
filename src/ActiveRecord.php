@@ -9,10 +9,27 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
 
     public function insert($runValidation = true, $attributes = null)
     {
+        if ($runValidation && !$this->validate($attributes)) {
+            Yii::info('Model not inserted due to validation error.', __METHOD__);
+            return false;
+        }
+        if (!$this->beforeSave(true)) {
+            return false;
+        }
+
+        $values = $this->getDirtyAttributes($attributes);
         self::getDb()->setToWrite();
-        $result = parent::insert($runValidation, $attributes);
+        if ((static::getDb()->getSchema()->insert(static::tableName(), $values)) === false) {
+            self::getDb()->setToRead();
+            return false;
+        }
         self::getDb()->setToRead();
-        return $result;
+
+        $changedAttributes = array_fill_keys(array_keys($values), null);
+        $this->setOldAttributes($values);
+        $this->afterSave(true, $changedAttributes);
+        return true;
+
     }
 
     /**
