@@ -7,6 +7,7 @@ class Connection extends \kak\clickhouse\Connection
 {
     public $dsnWrite;
     public $portWrite = 8123;
+    public $isReplicated = false;
 
     /** @var bool|Client */
     private $_transportWrite = false;

@@ -3,6 +3,18 @@ namespace brntsrs\ClickHouse;
 
 class Command extends \kak\clickhouse\Command
 {
+    public function createTable($table, $columns, $options = null)
+    {
+        if (!empty($this->db->isReplicated)) {
+            $options = empty($options) ? $options : str_replace(
+                'ENGINE = MergeTree()',
+                'ENGINE = ReplicatedMergeTree(\'/clickhouse/{shard}/{database}/{table}\', \'{replica}\'}',
+                $options
+            );
+        }
+        return parent::createTable($table, $columns, $options);
+    }
+
     public function bindValues($values)
     {
         if (empty($values)) {
