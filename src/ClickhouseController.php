@@ -33,7 +33,6 @@ class ClickhouseController extends Controller
                 echo 'no MergeTree, skipping', "\r\n";
                 continue;
             }
-            $replicatedTableName = $table->name . '_replicated';
             $options = substr($ddl, $optionsPosition);
 
             $columns = [];
@@ -49,21 +48,22 @@ class ClickhouseController extends Controller
                 $columns[$columnSchema->name] = $column;
                 $columnNames[] = $columnSchema->name;
             }
+            $nonReplicatedTableName = $table->name . '_replicated';
 
             $connection->isReplicated = false;
-            $connection->createCommand()->renameTable($table->name, $table->name . '_non_replicated');
+            $connection->createCommand()->renameTable($table->name, $nonReplicatedTableName);
             $connection->isReplicated = true;
 
             $command = new Command();
             $command->db = $connection;
             $command->db->enableSlaves = false;
-            $command->createTable($replicatedTableName, $columns, $options);
+            $command->createTable($table->name, $columns, $options);
             $command->execute();
             echo 'created... ';
 
             $columnNames = implode(', ', $columnNames);
             $connection->createCommand(<<<SQL
-INSERT INTO {$replicatedTableName} ({$columnNames}) SELECT ({$columnNames}) FROM {$table->name}
+INSERT INTO {$table->name} ({$columnNames}) SELECT ({$columnNames}) FROM {$nonReplicatedTableName}
 SQL )->execute();
 
             echo 'data moved', "\r\n";
