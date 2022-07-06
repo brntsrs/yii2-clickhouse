@@ -1,7 +1,9 @@
 <?php
 namespace brntsrs\ClickHouse;
 
+use kak\clickhouse\ColumnSchemaBuilder;
 use yii\console\Controller;
+use yii\db\Expression;
 
 class ClickhouseController extends Controller
 {
@@ -13,6 +15,58 @@ class ClickhouseController extends Controller
 
         if (empty($this->dictionariesPath)) {
             $this->dictionariesPath = \Yii::getAlias('@app/config/dictionaries');
+        }
+    }
+
+    public function actionReplicate()
+    {
+        /**
+         * @var Connection $connection
+         */
+        $connection = \Yii::$app->clickhouse;
+        foreach ($connection->schema->tableSchemas as $table) {
+            echo $table->name, '... ';
+
+            $ddl = $connection->createCommand('SHOW CREATE TABLE ' . $table->name)->queryOne()['statement'];
+            $optionsPosition = strpos($ddl, 'ENGINE = MergeTree()');
+            if ($optionsPosition === false) {
+                echo 'no MergeTree, skipping', "\r\n";
+                continue;
+            }
+            $replicatedTableName = $table->name . '_replicated';
+            $options = substr($ddl, $optionsPosition);
+
+            $columns = [];
+            $columnNames = [];
+            foreach ($table->columns as $columnSchema) {
+                $column = new ColumnSchemaBuilder($columnSchema->type, $columnSchema->size);
+                if (!empty($columnSchema->defaultValue)) {
+                    $column->defaultValue(new Expression($columnSchema->defaultValue));
+                }
+                if (!empty($columnSchema->unsigned)) {
+                    $column->unsigned();
+                }
+                $columns[$columnSchema->name] = $column;
+                $columnNames[] = $columnSchema->name;
+            }
+
+            $connection->isReplicated = false;
+            $connection->createCommand()->renameTable($table->name, $table->name . '_non_replicated');
+            $connection->isReplicated = true;
+
+            $command = new Command();
+            $command->db = $connection;
+            $command->db->enableSlaves = false;
+            $command->createTable($replicatedTableName, $columns, $options);
+            $command->execute();
+            echo 'created... ';
+
+            $columnNames = implode(', ', $columnNames);
+            $connection->createCommand(<<<SQL
+INSERT INTO {$replicatedTableName} ({$columnNames}) SELECT ({$columnNames}) FROM {$table->name}
+SQL )->execute();
+
+            echo 'data moved', "\r\n";
         }
     }
 

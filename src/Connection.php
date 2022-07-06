@@ -8,6 +8,8 @@ class Connection extends \kak\clickhouse\Connection
     public $dsnWrite;
     public $portWrite = 8123;
     public $isReplicated = false;
+    public $replicatedOptions = '(\'/clickhouse/{shard}/{database}/{table}\', \'{replica}\'})';
+    public $replicatedClusterName = 'clickhouse_cluster';
 
     /** @var bool|Client */
     private $_transportWrite = false;
