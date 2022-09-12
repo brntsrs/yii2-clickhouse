@@ -53,9 +53,6 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
         if ($this->primaryModel === null) {
             return $this;
         } else {
-            // lazy loading of a relation
-            $where = $this->where;
-
             if (is_array($this->via)) {
                 // via relation
                 /* @var $viaQuery \yii\db\ActiveQuery */
@@ -84,8 +81,6 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
             } else {
                 $this->filterByModels([$this->primaryModel]);
             }
-
-            $this->where = $where;
         }
 
         if (!empty($this->on)) {
@@ -156,32 +151,5 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
         }
 
         $this->andWhere(['in', $attributes, $values]);
-    }
-
-    /**
-     * Creates a new Query object and copies its property values from an existing one.
-     * The properties being copies are the ones to be used by query builders.
-     * @param Query $from the source query object
-     * @return Query the new Query object
-     */
-    public static function queryCreate($from)
-    {
-        return new Query([
-            'where' => $from->where,
-            'limit' => $from->limit,
-            'offset' => $from->offset,
-            'orderBy' => $from->orderBy,
-            'indexBy' => $from->indexBy,
-            'select' => $from->select,
-            'selectOption' => $from->selectOption,
-            'distinct' => $from->distinct,
-            'from' => $from->from,
-            'groupBy' => $from->groupBy,
-            'join' => $from->join,
-            'having' => $from->having,
-            'union' => $from->union,
-            'params' => $from->params,
-            'withQueries' => $from->withQueries,
-        ]);
     }
 }
