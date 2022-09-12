@@ -51,8 +51,7 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
     public function prepare($builder)
     {
         if ($this->primaryModel === null) {
-            // eager loading
-            $query = self::queryCreate($this);
+            return $builder;
         } else {
             // lazy loading of a relation
             $where = $this->where;
@@ -86,15 +85,14 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
                 $this->filterByModels([$this->primaryModel]);
             }
 
-            $query = self::queryCreate($this);
             $this->where = $where;
         }
 
         if (!empty($this->on)) {
-            $query->andWhere($this->on);
+            $builder->andWhere($this->on);
         }
 
-        return $query;
+        return $builder;
     }
 
     /**
