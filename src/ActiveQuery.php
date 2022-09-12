@@ -51,7 +51,7 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
     public function prepare($builder)
     {
         if ($this->primaryModel === null) {
-            return $builder;
+            return $this;
         } else {
             // lazy loading of a relation
             $where = $this->where;
@@ -89,10 +89,10 @@ class ActiveQuery extends \kak\clickhouse\ActiveQuery
         }
 
         if (!empty($this->on)) {
-            $builder->andWhere($this->on);
+            $this->andWhere($this->on);
         }
 
-        return $builder;
+        return $this;
     }
 
     /**
