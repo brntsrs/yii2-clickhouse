@@ -26,7 +26,7 @@ class ClickhouseController extends Controller
             if (strpos($entry, '.php') !== false) {
                 $content = file_get_contents(\Yii::getAlias('@app/migrations') . DIRECTORY_SEPARATOR . $entry);
                 if (strpos($content, '$this->db = Yii::$app->clickhouse')) {
-                    $migrationsList = str_replace('.php', '', $entry);
+                    $migrationsList[] = str_replace('.php', '', $entry);
                 }
             }
         }
