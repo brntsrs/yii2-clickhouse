@@ -25,7 +25,7 @@ class ClickhouseController extends Controller
         while (false !== ($entry = $directory->read())) {
             if (strpos($entry, '.php') !== false) {
                 $content = file_get_contents(\Yii::getAlias('@app/migrations') . DIRECTORY_SEPARATOR . $entry);
-                if (strpos($content, '$this->db = Yii::$app->clickhouse')) {
+                if (strpos($content, '$this->db = Yii::$app->clickhouse') !== false || stripos($content, 'MergeTree') !== false) {
                     $migrationsList[] = str_replace('.php', '', $entry);
                 }
             }
@@ -35,7 +35,7 @@ class ClickhouseController extends Controller
         if (!empty($migrationsList)) {
             \Yii::$app->db->createCommand()->delete('migrations', [
                 'version' => $migrationsList
-            ]);
+            ])->execute();
         }
     }
 
