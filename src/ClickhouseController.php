@@ -18,6 +18,27 @@ class ClickhouseController extends Controller
         }
     }
 
+    public function actionDropMigrationsInfo()
+    {
+        $migrationsList = [];
+        $directory = dir(\Yii::getAlias('@app/migrations'));
+        while (false !== ($entry = $directory->read())) {
+            if (strpos($entry, '.php') !== false) {
+                $content = file_get_contents(\Yii::getAlias('@app/migrations') . DIRECTORY_SEPARATOR . $entry);
+                if (strpos($content, '$this->db = Yii::$app->clickhouse')) {
+                    $migrationsList = str_replace('.php', '', $entry);
+                }
+            }
+        }
+        $directory->close();
+
+        if (!empty($migrationsList)) {
+            \Yii::$app->db->createCommand()->delete('migrations', [
+                'version' => $migrationsList
+            ]);
+        }
+    }
+
     public function actionReplicate()
     {
         /**
