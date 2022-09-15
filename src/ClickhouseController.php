@@ -33,7 +33,7 @@ class ClickhouseController extends Controller
         $directory->close();
 
         if (!empty($migrationsList)) {
-            \Yii::$app->db->createCommand()->delete('migrations', [
+            \Yii::$app->db->createCommand()->delete('migration', [
                 'version' => $migrationsList
             ])->execute();
         }
