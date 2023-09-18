@@ -84,7 +84,7 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         if ($this->isForSearch && ($value === '' || $value === null || $value === [])) {
             return null;
         }
-        $attributeType = $this->getAttributeType($attribute);
+        $attributeType = $this->getAttributeType($attribute, $value);
         $conversionTypes = ['integer', 'float', 'double', 'boolean', 'date', 'string'];
         if (is_array($value) && in_array($attributeType, $conversionTypes)) {
             $list = [];
@@ -118,7 +118,7 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         return strval($value);
     }
 
-    private function getAttributeType($attribute)
+    private function getAttributeType($attribute, $value)
     {
         foreach ($this->rules() as $rule) {
             if (is_array($rule[0])) {
@@ -141,13 +141,25 @@ class ActiveRecord extends \kak\clickhouse\ActiveRecord
         }
 
         $column = self::getTableSchema()->getColumn($attribute);
-        if ($column->type == 'date') {
-            return 'date';
+        if (empty($column)) {
+            switch(gettype($value)) {
+                case 'integer':
+                case 'double':
+                case 'boolean':
+                case 'array':
+                    return gettype($value);
+                default:
+                    return 'safe';
+            }
+        } else {
+            if ($column->type == 'date') {
+                return 'date';
+            }
+            if (strpos($column->dbType, 'Array') !== false) {
+                return 'array';
+            }
+            return $column->phpType;
         }
-        if (strpos($column->dbType, 'Array') !== false) {
-            return 'array';
-        }
-        return $column->phpType;
     }
 
     private function getRuleType($rule)
